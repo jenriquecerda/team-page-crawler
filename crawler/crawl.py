@@ -6,7 +6,7 @@ import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
 
 from crawler.extract import Person, merge_people, parse_page
-from crawler.fetch import FetchError, Fetcher
+from crawler.fetch import Fetcher, FetchError
 from crawler.frontier import Frontier
 from crawler.politeness import HostPacer, RobotsCache
 from crawler.store import Diff, Store
