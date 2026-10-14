@@ -13,6 +13,12 @@ def test_normalize_drops_default_port_and_rejects_other_schemes():
     assert normalize_url("javascript:void(0)") is None
 
 
+def test_normalize_rejects_invalid_hosts_and_ports():
+    assert normalize_url("https://not a domain") is None
+    assert normalize_url("https://acme.com:abc/") is None
+    assert normalize_url("https://acme") is None
+
+
 def test_same_site_ignores_www():
     assert same_site("https://www.acme.com/x", "https://acme.com")
     assert not same_site("https://evil.com/acme.com", "https://acme.com")

@@ -1,6 +1,9 @@
 """URL normalization, same-site checks and team-page scoring."""
 
+import re
 from urllib.parse import urljoin, urlsplit, urlunsplit
+
+_VALID_HOST = re.compile(r"^(?=.{1,253}$)([a-z0-9-]{1,63}\.)+[a-z]{2,63}$|^localhost$")
 
 TEAM_KEYWORDS = ("team", "leadership", "people", "about", "management", "company", "founders")
 SKIP_EXTENSIONS = (
@@ -13,15 +16,20 @@ def normalize_url(url: str, base: str | None = None) -> str | None:
     """Absolute, fragment-free, lowercase host, no default port. None if not http(s)."""
     if base:
         url = urljoin(base, url)
-    parts = urlsplit(url.strip())
+    try:
+        parts = urlsplit(url.strip())
+        port = parts.port
+    except ValueError:  # e.g. a non-numeric port
+        return None
     if parts.scheme not in ("http", "https") or not parts.hostname:
         return None
     host = parts.hostname.lower()
-    if parts.port and not (
-        (parts.scheme == "http" and parts.port == 80)
-        or (parts.scheme == "https" and parts.port == 443)
+    if not _VALID_HOST.match(host):
+        return None
+    if port and not (
+        (parts.scheme == "http" and port == 80) or (parts.scheme == "https" and port == 443)
     ):
-        host = f"{host}:{parts.port}"
+        host = f"{host}:{port}"
     path = parts.path or "/"
     return urlunsplit((parts.scheme, host, path, parts.query, ""))
 
